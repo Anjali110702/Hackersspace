@@ -3,29 +3,33 @@ import mediapipe as mp
 import numpy as np
 import tkinter as tk
 from PIL import Image, ImageTk
-import pandas as pd
+import os
 
 class VirtualTryOnApp:
     def __init__(self, window):
         self.window = window
         self.window.title("Virtual Try-On")
+        self.window.geometry("800x600")
 
         # Initialize MediaPipe Pose solution
         self.mp_pose = mp.solutions.pose
         self.pose = self.mp_pose.Pose()
 
         # Load an example watch image (transparent PNG)
-        self.watch_img = cv2.imread("C:/Users/anjal/Downloads/watch.png", cv2.IMREAD_UNCHANGED)
+        watch_img_path = "C:/Users/anjal/Downloads/watch.png"
+        if not os.path.exists(watch_img_path):
+            print("Error: Watch image not found.")
+            self.window.destroy()
+            return
+
+        self.watch_img = cv2.imread(watch_img_path, cv2.IMREAD_UNCHANGED)
         if self.watch_img is None:
-            print("Error: Watch image not found or unable to load.")
+            print("Error: Unable to load watch image.")
             self.window.destroy()
             return
 
         # Check if the image has an alpha channel
-        if self.watch_img.shape[2] == 4:
-            self.has_alpha = True
-        else:
-            self.has_alpha = False
+        self.has_alpha = self.watch_img.shape[2] == 4
 
         # Create a label for displaying the video feed
         self.video_label = tk.Label(window)
@@ -61,9 +65,7 @@ class VirtualTryOnApp:
         ret, frame = self.cap.read()
         if not ret:
             print("Error: Unable to capture video frame.")
-            self.cap.release()
-            self.is_running = False
-            self.start_button.config(text="Start Virtual Try-On")
+            self.stop_try_on()
             return
 
         # Convert the frame to RGB
@@ -118,6 +120,12 @@ class VirtualTryOnApp:
         self.video_label.image = photo
 
         self.window.after(10, self.update_frame)
+
+    def stop_try_on(self):
+        self.is_running = False
+        if self.cap:
+            self.cap.release()
+        self.start_button.config(text="Start Virtual Try-On")
 
 if __name__ == "__main__":
     root = tk.Tk()
