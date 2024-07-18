@@ -3,6 +3,7 @@ import mediapipe as mp
 import numpy as np
 import tkinter as tk
 from PIL import Image, ImageTk
+import pandas as pd
 
 class VirtualTryOnApp:
     def __init__(self, window):
